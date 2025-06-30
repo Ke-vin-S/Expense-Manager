@@ -33,7 +33,16 @@ public class RoomService {
     public List<UserDTO> getRoomUsers(UUID roomId) {
         List<UserInRoom> usersInRoom = userInRoomRepository.findUsersByRoomId(roomId);
         return usersInRoom.stream()
-                .map(uir -> new UserDTO(uir.getUser().getId(), uir.getUser().getName(), uir.getUser().getEmail()))
+                .map(uir -> {
+                    if (uir.isRegistered()) {
+                        // Registered user: get details from User entity
+                        User user = uir.getUser();
+                        return new UserDTO(user.getId(), user.getName(), user.getEmail());
+                    } else {
+                        // Unregistered user: use name from UserInRoom, no email
+                        return new UserDTO(uir.getId(), uir.getName(), null);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
